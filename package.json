@@ -1,0 +1,13 @@
+{
+  "name": "og-lab",
+  "version": "1.0.0",
+  "description": "Preview Open Graph share cards for URLs that aren't publicly reachable yet.",
+  "main": "server.js",
+  "bin": { "og-lab": "server.js" },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": { "node": ">=18" },
+  "private": true,
+  "license": "MIT"
+}

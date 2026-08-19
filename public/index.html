@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>og-lab</title>
+  <style>
+    :root {
+      --ink: #0d121a;
+      --panel: #141b26;
+      --panel-2: #1a2230;
+      --line: #26303f;
+      --line-soft: #1e2836;
+      --text: #e3eaf3;
+      --muted: #8494aa;
+      --dim: #5d6c81;
+      --accent: #5fd4e0;
+      --error: #ff6f6f;
+      --warn: #f0a04b;
+      --nit: #7f8ea4;
+      --pass: #57cc8f;
+      --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      background: var(--ink);
+      color: var(--text);
+      font: 400 13px/1.55 var(--mono);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent); }
+
+    /* ---------------------------------------------------------------- masthead */
+
+    .masthead {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--panel), var(--ink));
+      flex-wrap: wrap;
+    }
+
+    .wordmark {
+      font-size: 15px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .wordmark span { color: var(--accent); }
+
+    .tagline { color: var(--dim); font-size: 11.5px; }
+
+    .status {
+      margin-left: auto;
+      font-size: 11.5px;
+      color: var(--muted);
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .status b { color: var(--text); font-weight: 500; }
+
+    /* ----------------------------------------------------------------- console */
+
+    .console {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .console-inner { max-width: 100%; }
+
+    .row { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; }
+
+    .field { flex: 1 1 380px; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+
+    .field-agent { flex: 0 0 210px; }
+    .field-action { flex: 0 0 auto; }
+    .field-action button { height: 100%; }
+
+    .input-wrap { position: relative; display: flex; }
+
+    button.in-input {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 4px 9px;
+      font-size: 10.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--panel-2);
+    }
+
+    button.in-input:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ----------------------------------------------------------- hero mode */
+
+    .hero-copy { display: none; }
+
+    .console.hero { padding: 72px 24px 40px; }
+    .console.hero .console-inner { max-width: 700px; margin: 0 auto; }
+    .console.hero .hero-copy { display: block; margin-bottom: 22px; }
+
+    .hero-copy h1 {
+      font-size: 24px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      margin: 0 0 8px;
+    }
+
+    .hero-copy p { margin: 0; color: var(--muted); font-size: 12.5px; max-width: 58ch; }
+    .hero-copy code, .tips code {
+      background: var(--panel-2);
+      padding: 0 4px;
+      border-radius: 3px;
+      color: var(--accent);
+    }
+
+    .console.hero .field-url { flex: 1 1 100%; }
+    .console.hero .field-agent { flex: 1 1 200px; }
+    .console.hero #url { font-size: 14.5px; padding: 13px 74px 13px 13px; }
+    .console.hero .field-action button { padding-block: 13px; }
+
+    .tips { display: none; margin-top: 26px; border-top: 1px solid var(--line); padding-top: 18px; }
+    .console.hero .tips { display: block; }
+    .tips ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 12px; }
+    .tips li { margin-bottom: 6px; }
+    .tips b { color: var(--text); font-weight: 500; }
+
+    /* -------------------------------------------------------------- recent */
+
+    .recent { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; align-items: center; }
+
+    .recent-label {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-right: 2px;
+    }
+
+    .chip {
+      font: inherit;
+      font-size: 11.5px;
+      color: var(--muted);
+      background: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 11px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chip:hover { color: var(--accent); border-color: var(--accent); }
+
+    .alert {
+      margin-top: 12px;
+      border: 1px solid rgba(255, 111, 111, 0.45);
+      border-left-width: 3px;
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--text);
+      background: rgba(255, 111, 111, 0.07);
+    }
+
+    .alert b {
+      display: block;
+      color: var(--error);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    label {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    input[type=text], select, textarea {
+      font: inherit;
+      color: var(--text);
+      background: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 9px 11px;
+      width: 100%;
+      outline: none;
+    }
+
+    input[type=text]:focus, select:focus, textarea:focus, button:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(95, 212, 224, 0.18);
+    }
+
+    textarea { resize: vertical; min-height: 78px; }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 9px 14px;
+      white-space: nowrap;
+    }
+
+    button:hover { border-color: var(--dim); }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #04222a;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 11.5px;
+      padding-inline: 20px;
+    }
+
+    button.primary:disabled { opacity: 0.5; cursor: wait; }
+
+    .link-button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      padding: 4px 0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .link-button:hover { color: var(--accent); }
+
+    .advanced { margin-top: 14px; display: none; }
+    .advanced.open { display: block; }
+
+    .hint { color: var(--dim); font-size: 11px; margin-top: 6px; }
+
+    /* -------------------------------------------------------------------- shell */
+
+    .shell[hidden] { display: none; }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 0;
+      align-items: start;
+    }
+
+    .rail {
+      position: sticky;
+      top: 0;
+      max-height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid var(--line);
+      padding: 20px;
+    }
+
+    .tray { padding: 24px; min-width: 0; }
+
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin: 0 0 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .rail section + section { margin-top: 26px; }
+
+    /* ------------------------------------------------------------------ checks */
+
+    .check {
+      display: grid;
+      grid-template-columns: 12px 1fr;
+      gap: 9px;
+      padding: 8px 0;
+      border-top: 1px solid var(--line-soft);
+      align-items: start;
+    }
+
+    .check:first-of-type { border-top: none; }
+
+    .dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 6px; }
+    .dot.error { background: var(--error); }
+    .dot.warn { background: var(--warn); }
+    .dot.nit { background: var(--nit); }
+    .dot.pass { background: var(--pass); }
+
+    .check-label { font-size: 12px; }
+    .check-detail { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+    .check-detail code, .check-label code {
+      background: var(--panel-2);
+      padding: 0 4px;
+      border-radius: 3px;
+      color: var(--accent);
+    }
+
+    .tally { display: flex; gap: 10px; font-size: 11px; color: var(--muted); }
+    .tally i { font-style: normal; }
+
+    /* -------------------------------------------------------------- tags table */
+
+    .tags { width: 100%; border-collapse: collapse; }
+    .tags td { padding: 5px 0; vertical-align: top; border-top: 1px solid var(--line-soft); font-size: 11.5px; }
+    .tags tr:first-child td { border-top: none; }
+    .tags td:first-child { color: var(--dim); padding-right: 12px; white-space: nowrap; width: 1%; }
+    .tags td:last-child { word-break: break-word; }
+    .tags .missing { color: var(--dim); font-style: italic; }
+
+    /* ------------------------------------------------------------- crop gauge */
+
+    .gauge {
+      position: relative;
+      background:
+              repeating-conic-gradient(#1b232f 0% 25%, #161d28 0% 50%) 50% / 14px 14px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      overflow: hidden;
+      line-height: 0;
+    }
+
+    .gauge img { width: 100%; height: auto; display: block; }
+
+    .crop {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .crop::after {
+      content: attr(data-label);
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      font: 500 9px/1.4 var(--mono);
+      letter-spacing: 0.1em;
+      padding: 2px 5px;
+      border-radius: 2px;
+    }
+
+    .crop.wide { outline: 1.5px solid var(--accent); box-shadow: 0 0 0 9999px rgba(9, 13, 19, 0.55); }
+    .crop.wide::after { background: var(--accent); color: #04222a; }
+    .crop.square { outline: 1.5px dashed rgba(240, 160, 75, 0.9); }
+    .crop.square::after { background: var(--warn); color: #241203; top: auto; bottom: 3px; }
+
+    /* ---------------------------------------------------------------- overrides */
+
+    .overrides { display: flex; flex-direction: column; gap: 9px; }
+    .overrides input, .overrides textarea, .overrides select { font-size: 12px; padding: 7px 9px; }
+    .overrides textarea { min-height: 56px; }
+
+    /* ------------------------------------------------------------------ tray */
+
+    .specimens {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 22px;
+    }
+
+    .specimen { min-width: 0; }
+
+    .specimen-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      padding-bottom: 7px;
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .specimen-name {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .specimen-note { font-size: 10.5px; color: var(--dim); text-align: right; }
+
+    .slab {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-top: none;
+      border-radius: 0 0 5px 5px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .slab > * { width: 100%; max-width: 420px; }
+
+    /* platform surfaces */
+    .slab.s-white { background: #ffffff; }
+    .slab.s-facebook { background: #f0f2f5; }
+    .slab.s-linkedin { background: #f4f2ee; }
+    .slab.s-discord { background: #313338; }
+    .slab.s-whatsapp { background: #ece5dd; }
+    .slab.s-imessage { background: #ffffff; }
+
+    .ph {
+      background: #d9dee5;
+      color: #6b7684;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: 500 11px var(--mono);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .clamp { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+    .c1 { -webkit-line-clamp: 1; }
+    .c2 { -webkit-line-clamp: 2; }
+    .c3 { -webkit-line-clamp: 3; }
+
+    /* ------------------------------------------------------------------- X */
+
+    .x-card {
+      border: 1px solid #cfd9de;
+      border-radius: 16px;
+      overflow: hidden;
+      font-family: "Chirp", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #fff;
+    }
+
+    .x-media { position: relative; line-height: 0; }
+    .x-media img, .x-media .ph { width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; display: block; }
+
+    .x-domain {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      background: rgba(0, 0, 0, 0.77);
+      color: #fff;
+      font-size: 12px;
+      line-height: 1;
+      padding: 4px 6px;
+      border-radius: 4px;
+    }
+
+    .x-small { display: flex; }
+    .x-small .x-thumb { width: 128px; flex: 0 0 128px; align-self: stretch; }
+    .x-small .x-thumb img, .x-small .x-thumb .ph { width: 100%; height: 100%; min-height: 128px; object-fit: cover; display: block; }
+    .x-small .x-body {
+      padding: 10px 12px;
+      border-left: 1px solid #cfd9de;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .x-small .x-host { color: #536471; font-size: 13px; }
+    .x-small .x-title { color: #0f1419; font-size: 15px; margin-top: 2px; }
+    .x-small .x-desc { color: #536471; font-size: 15px; margin-top: 2px; }
+
+    /* ------------------------------------------------------------- Facebook */
+
+    .fb-card {
+      font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #f2f3f5;
+      border: 1px solid #dadde1;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .fb-card img, .fb-card .ph { width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; display: block; }
+    .fb-body { padding: 10px 12px; border-top: 1px solid #dadde1; }
+    .fb-host { color: #65676b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; }
+    .fb-title { color: #050505; font-size: 17px; font-weight: 600; line-height: 20px; margin-top: 3px; }
+    .fb-desc { color: #65676b; font-size: 14px; line-height: 19px; margin-top: 3px; }
+
+    /* ------------------------------------------------------------- LinkedIn */
+
+    .li-card {
+      font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .li-card img, .li-card .ph { width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; display: block; }
+    .li-body { padding: 10px 12px 12px; background: #f9fafb; }
+    .li-title { color: rgba(0, 0, 0, 0.9); font-size: 16px; font-weight: 600; line-height: 20px; }
+    .li-host { color: rgba(0, 0, 0, 0.6); font-size: 12px; margin-top: 4px; }
+
+    /* ---------------------------------------------------------------- Slack */
+
+    .sl-card {
+      font-family: Lato, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      border-left: 4px solid #dddddd;
+      padding-left: 12px;
+      background: #fff;
+    }
+
+    .sl-site { display: flex; align-items: center; gap: 6px; color: #1d1c1d; font-size: 13px; font-weight: 700; }
+    .sl-site img { width: 16px; height: 16px; border-radius: 2px; object-fit: cover; }
+    .sl-title { color: #1264a3; font-size: 15px; font-weight: 700; line-height: 1.4; margin-top: 2px; }
+    .sl-desc { color: #1d1c1d; font-size: 15px; line-height: 1.46; margin-top: 2px; }
+    .sl-media { margin-top: 8px; max-width: 360px; }
+    .sl-media img, .sl-media .ph { width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; border-radius: 8px; display: block; }
+
+    /* -------------------------------------------------------------- Discord */
+
+    .dc-card {
+      font-family: "gg sans", "Noto Sans", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #2b2d31;
+      border-left: 4px solid #1e1f22;
+      border-radius: 4px;
+      padding: 8px 16px 16px 12px;
+      max-width: 432px;
+    }
+
+    .dc-site { color: #dbdee1; font-size: 12px; margin-top: 8px; }
+    .dc-title { color: #00a8fc; font-size: 16px; font-weight: 600; line-height: 1.375; margin-top: 8px; }
+    .dc-desc { color: #dbdee1; font-size: 14px; line-height: 1.125rem; margin-top: 8px; }
+    .dc-media { margin-top: 16px; }
+    .dc-media img, .dc-media .ph { width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; border-radius: 4px; display: block; }
+
+    /* ------------------------------------------------------------- iMessage */
+
+    .im-card {
+      font-family: -apple-system, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif;
+      max-width: 300px;
+      border-radius: 17px;
+      overflow: hidden;
+      background: #f2f2f7;
+      border: 1px solid #e3e3e8;
+    }
+
+    .im-card img, .im-card .ph { width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; display: block; }
+    .im-body { padding: 8px 10px 10px; }
+    .im-title { color: #000; font-size: 13px; font-weight: 600; line-height: 1.3; }
+    .im-desc { color: #8a8a8e; font-size: 12px; line-height: 1.3; margin-top: 1px; }
+    .im-host { color: #8a8a8e; font-size: 12px; margin-top: 1px; }
+
+    /* ------------------------------------------------------------- WhatsApp */
+
+    .wa-bubble {
+      background: #d9fdd3;
+      border-radius: 8px 0 8px 8px;
+      padding: 3px;
+      max-width: 330px;
+      box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    .wa-preview { background: rgba(255, 255, 255, 0.55); border-radius: 6px; overflow: hidden; }
+    .wa-preview img, .wa-preview .ph { width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; display: block; }
+    .wa-body { padding: 8px 10px 10px; }
+    .wa-title { color: #111b21; font-size: 13.5px; font-weight: 500; line-height: 19px; }
+    .wa-desc { color: #667781; font-size: 12.5px; line-height: 17px; margin-top: 1px; }
+    .wa-host { color: #8696a0; font-size: 12.5px; margin-top: 3px; }
+    .wa-link { color: #027eb5; font-size: 14.5px; padding: 6px 8px 4px; word-break: break-all; }
+
+    /* --------------------------------------------------------------- Google */
+
+    .go-card { font-family: arial, sans-serif; background: #fff; }
+    .go-site { display: flex; align-items: center; gap: 10px; }
+    .go-favicon { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #ecedef; padding: 4px; object-fit: contain; background: #fff; }
+    .go-name { color: #202124; font-size: 14px; line-height: 18px; }
+    .go-host { color: #4d5156; font-size: 12px; line-height: 18px; }
+    .go-title { color: #1a0dab; font-size: 20px; line-height: 26px; margin-top: 6px; }
+    .go-desc { color: #4d5156; font-size: 14px; line-height: 22px; margin-top: 3px; }
+
+    /* ------------------------------------------------------------- messages */
+
+    .busy { color: var(--accent); }
+
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; }
+      .rail { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--line); }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .specimen { animation: rise 0.28s ease both; }
+      @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    }
+  </style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wordmark">og<span>·</span>lab</div>
+  <div class="tagline">share cards for URLs that aren't public yet</div>
+  <div class="status" id="status"></div>
+</header>
+
+<div class="console hero" id="console">
+  <div class="console-inner">
+
+    <div class="hero-copy">
+      <h1>Paste a URL</h1>
+      <p>This machine fetches the page, so <code>localhost</code>, private hostnames, and self-signed certificates all work. Paste anywhere on this page to start.</p>
+    </div>
+
+    <div class="row">
+      <div class="field field-url">
+        <label for="url">Page URL</label>
+        <div class="input-wrap">
+          <input type="text" id="url" spellcheck="false" placeholder="http://localhost:3000/campaigns/spring" autocomplete="off">
+          <button class="in-input" id="paste" title="Paste from clipboard">Paste</button>
+        </div>
+      </div>
+      <div class="field field-agent">
+        <label for="agent">Fetch as</label>
+        <select id="agent">
+          <option value="browser">Browser (Safari)</option>
+          <option value="facebook">facebookexternalhit</option>
+          <option value="twitter">Twitterbot</option>
+          <option value="slack">Slackbot</option>
+          <option value="linkedin">LinkedInBot</option>
+          <option value="discord">Discordbot</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="google">Googlebot</option>
+        </select>
+      </div>
+      <div class="field field-action">
+        <label>&nbsp;</label>
+        <button class="primary" id="run">Preview</button>
+      </div>
+    </div>
+
+    <div class="alert" id="alert" hidden></div>
+    <div class="recent" id="recent" hidden></div>
+
+    <button class="link-button" id="toggle-advanced">More options</button>
+
+    <div class="advanced" id="advanced">
+      <div class="row">
+        <div class="field">
+          <label for="headers">Request headers, one per line</label>
+          <textarea id="headers" spellcheck="false" placeholder="Cookie: .ASPXAUTH=…&#10;Authorization: Bearer …"></textarea>
+          <div class="hint">Use these to preview pages behind a login.</div>
+        </div>
+        <div class="field">
+          <label for="html">Or paste HTML instead of fetching</label>
+          <textarea id="html" spellcheck="false" placeholder="<head>…</head>"></textarea>
+          <div class="hint">Relative image paths resolve against the URL above.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tips" id="tips">
+      <ul>
+        <li>To preview a page behind a login, add a <code>Cookie</code> header under <b>More options</b>.</li>
+        <li>To check whether your app serves different tags to crawlers, switch <b>Fetch as</b>.</li>
+        <li>To test copy before you write it into the template, edit the fields in the left rail after the first fetch.</li>
+        <li>Press <code>Ctrl</code> or <code>Cmd</code> plus <code>Enter</code> to refetch after a code change.</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<div class="shell" hidden>
+  <aside class="rail" id="rail"></aside>
+  <main class="tray" id="tray"></main>
+</div>
+
+<script>
+  (() => {
+    'use strict';
+
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      url: $('url'), agent: $('agent'), headers: $('headers'), html: $('html'),
+      run: $('run'), rail: $('rail'), tray: $('tray'), status: $('status'),
+      advanced: $('advanced'), toggle: $('toggle-advanced'), console: $('console'),
+      shell: document.querySelector('.shell'), paste: $('paste'),
+      recent: $('recent'), alert: $('alert'),
+    };
+
+    const RECENT_KEY = 'og-lab:recent';
+
+    let data = null;
+    const overrides = {};
+
+    // --------------------------------------------------------------- helpers
+
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+    ));
+
+    const code = (text) => esc(text).replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    const proxy = (url) => url
+            ? `/api/image?url=${encodeURIComponent(url)}&agent=${encodeURIComponent(els.agent.value)}`
+            : '';
+
+    function host(url) {
+      try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url || 'example.com'; }
+    }
+
+    function media(url, className, alt) {
+      return url
+              ? `<img class="${className || ''}" src="${esc(proxy(url))}" alt="${esc(alt || '')}" loading="lazy">`
+              : `<div class="ph ${className || ''}">no image</div>`;
+    }
+
+    /** Merges fetched tags with anything typed into the override fields. */
+    function effective() {
+      const tags = { ...data.tags };
+      for (const [key, value] of Object.entries(overrides)) {
+        if (value !== '') tags[key] = value;
+      }
+      if (overrides.image) tags.twitterImage = overrides.image;
+      tags.pageHost = host(tags.ogUrl || data.finalUrl || els.url.value);
+      return tags;
+    }
+
+    // ----------------------------------------------------------------- fetch
+
+    function setMode(mode) {
+      els.console.classList.toggle('hero', mode === 'hero');
+      els.shell.hidden = mode === 'hero';
+    }
+
+    function fail(title, detail) {
+      els.alert.hidden = false;
+      els.alert.innerHTML = `<b>${esc(title)}</b>${esc(detail)}`;
+    }
+
+    function readRecent() {
+      try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch { return []; }
+    }
+
+    function rememberUrl(url) {
+      const list = [url, ...readRecent().filter((item) => item !== url)].slice(0, 6);
+      try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch { /* private mode */ }
+      renderRecent();
+    }
+
+    function renderRecent() {
+      const list = readRecent();
+      els.recent.hidden = list.length === 0;
+      if (!list.length) return;
+      els.recent.innerHTML = '<span class="recent-label">Recent</span>' + list.map((url) => {
+        let label = url;
+        try {
+          const parsed = new URL(url);
+          label = parsed.host + (parsed.pathname === '/' ? '' : parsed.pathname);
+        } catch { /* keep the raw string */ }
+        return `<button class="chip" data-url="${esc(url)}" title="${esc(url)}">${esc(label)}</button>`;
+      }).join('');
+      els.recent.querySelectorAll('.chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          els.url.value = chip.dataset.url;
+          run();
+        });
+      });
+    }
+
+    async function run() {
+      const url = els.url.value.trim();
+      const html = els.html.value.trim();
+      if (!url && !html) {
+        els.url.focus();
+        return;
+      }
+
+      els.alert.hidden = true;
+      els.run.disabled = true;
+      els.run.textContent = 'Fetching';
+      els.status.innerHTML = '<span class="busy">fetching…</span>';
+      try {
+        const response = await fetch('/api/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, html, agent: els.agent.value, headers: els.headers.value }),
+        });
+        const payload = await response.json();
+        if (payload.error) {
+          els.status.textContent = '';
+          fail(data ? 'Refetch failed, showing the last result' : 'Fetch failed', payload.error);
+          return;
+        }
+        data = payload;
+        for (const key of Object.keys(overrides)) delete overrides[key];
+        setMode('results');
+        render();
+        if (url) rememberUrl(url);
+        history.replaceState(null, '', url ? `?url=${encodeURIComponent(url)}` : location.pathname);
+      } catch (error) {
+        els.status.textContent = '';
+        fail('Request failed', error.message);
+      } finally {
+        els.run.disabled = false;
+        els.run.textContent = 'Preview';
+      }
+    }
+
+    // ---------------------------------------------------------------- render
+
+    function render() {
+      const tags = effective();
+      renderStatus();
+      renderRail(tags);
+      renderTray(tags);
+    }
+
+    function renderStatus() {
+      const image = data.image;
+      const parts = [`<span>HTTP <b>${data.status}</b></span>`];
+      if (data.redirected) parts.push(`<span>redirected to <b>${esc(host(data.finalUrl))}</b></span>`);
+      parts.push(`<span><b>${(data.bytes / 1024).toFixed(0)}</b> KB html</span>`);
+      if (image && image.ok && image.width) {
+        parts.push(`<span>image <b>${image.width}\u00d7${image.height}</b> ${esc(image.format)}</span>`);
+      }
+      els.status.innerHTML = parts.join('');
+    }
+
+    function renderRail(tags) {
+      const counts = { error: 0, warn: 0, nit: 0, pass: 0 };
+      for (const check of data.checks) counts[check.level]++;
+
+      const checks = data.checks.map((check) => `
+      <div class="check">
+        <span class="dot ${check.level}"></span>
+        <div>
+          <div class="check-label">${code(check.label)}</div>
+          ${check.detail ? `<div class="check-detail">${code(check.detail)}</div>` : ''}
+        </div>
+      </div>`).join('');
+
+      const rows = [
+        ['og:title', tags.title],
+        ['og:description', tags.description],
+        ['og:image', tags.rawImage],
+        ['og:url', tags.ogUrl],
+        ['og:type', tags.type],
+        ['og:site_name', tags.siteName],
+        ['og:image:alt', tags.imageAlt],
+        ['twitter:card', tags.twitterCard],
+        ['twitter:site', tags.twitterSite],
+        ['canonical', tags.canonical],
+      ].map(([key, value]) => `
+      <tr><td>${key}</td><td>${value ? esc(value) : '<span class="missing">not set</span>'}</td></tr>
+    `).join('');
+
+      els.rail.innerHTML = `
+      <section>
+        <h2 class="section-label">
+          <span>Checks</span>
+          <span class="tally">
+            <i style="color:var(--error)">${counts.error} error</i>
+            <i style="color:var(--warn)">${counts.warn} warn</i>
+            <i style="color:var(--nit)">${counts.nit} nit</i>
+          </span>
+        </h2>
+        ${checks}
+      </section>
+
+      ${tags.image ? `
+      <section>
+        <h2 class="section-label"><span>Crop gauge</span><span>center crop</span></h2>
+        <div class="gauge" id="gauge">
+          <img src="${esc(proxy(tags.image))}" alt="Source image with crop guides">
+        </div>
+        <div class="hint">Solid line: what a 1.91:1 card keeps. Dashed line: what a square card keeps.</div>
+      </section>` : ''}
+
+      <section>
+        <h2 class="section-label"><span>Tags found</span></h2>
+        <table class="tags">${rows}</table>
+      </section>
+
+      <section>
+        <h2 class="section-label"><span>Try different copy</span></h2>
+        <div class="overrides">
+          <input type="text" data-key="title" placeholder="Title" value="${esc(overrides.title || '')}">
+          <textarea data-key="description" placeholder="Description">${esc(overrides.description || '')}</textarea>
+          <input type="text" data-key="image" placeholder="Image URL" value="${esc(overrides.image || '')}">
+          <input type="text" data-key="siteName" placeholder="Site name" value="${esc(overrides.siteName || '')}">
+          <select data-key="twitterCard">
+            <option value="">Card type from the page (${esc(data.tags.twitterCard || 'unset')})</option>
+            <option value="summary_large_image" ${overrides.twitterCard === 'summary_large_image' ? 'selected' : ''}>summary_large_image</option>
+            <option value="summary" ${overrides.twitterCard === 'summary' ? 'selected' : ''}>summary</option>
+          </select>
+          <button id="copy-tags">Copy meta tags</button>
+        </div>
+      </section>`;
+
+      els.rail.querySelectorAll('[data-key]').forEach((input) => {
+        input.addEventListener('input', () => {
+          overrides[input.dataset.key] = input.value;
+          const tray = effective();
+          renderTray(tray);
+          drawGauge();
+        });
+      });
+
+      $('copy-tags').addEventListener('click', async (event) => {
+        await navigator.clipboard.writeText(tagBlock(effective()));
+        event.target.textContent = 'Copied';
+        setTimeout(() => { event.target.textContent = 'Copy meta tags'; }, 1400);
+      });
+
+      drawGauge();
+    }
+
+    function drawGauge() {
+      const gauge = $('gauge');
+      if (!gauge) return;
+      const image = gauge.querySelector('img');
+      const place = () => {
+        gauge.querySelectorAll('.crop').forEach((node) => node.remove());
+        const ratio = image.naturalWidth / image.naturalHeight;
+        if (!ratio || !Number.isFinite(ratio)) return;
+        for (const [target, className, label] of [[1.91, 'wide', '1.91:1'], [1, 'square', '1:1']]) {
+          const box = document.createElement('div');
+          box.className = `crop ${className}`;
+          box.dataset.label = label;
+          if (ratio > target) {
+            box.style.height = '100%';
+            box.style.width = `${(target / ratio) * 100}%`;
+          } else {
+            box.style.width = '100%';
+            box.style.height = `${(ratio / target) * 100}%`;
+          }
+          gauge.appendChild(box);
+        }
+      };
+      if (image.complete && image.naturalWidth) place();
+      else image.addEventListener('load', place, { once: true });
+    }
+
+    // ------------------------------------------------------------ card views
+
+    function renderTray(t) {
+      const cards = [
+        { name: 'X', note: t.twitterCard === 'summary' ? 'summary · small card' : 'summary_large_image · 1.91:1', surface: 's-white', body: xLarge(t) },
+        { name: 'X · summary', note: t.twitterCard === 'summary' ? 'summary · square thumbnail' : 'the fallback when no card type is set', surface: 's-white', body: xSmall(t) },
+        { name: 'Facebook', note: 'feed link attachment · 1.91:1', surface: 's-facebook', body: facebook(t) },
+        { name: 'LinkedIn', note: 'shared post · title only, no description', surface: 's-linkedin', body: linkedin(t) },
+        { name: 'Slack', note: 'unfurl · color bar from theme-color', surface: 's-white', body: slack(t) },
+        { name: 'Discord', note: 'embed · dark surface', surface: 's-discord', body: discord(t) },
+        { name: 'iMessage', note: 'rich link bubble', surface: 's-imessage', body: imessage(t) },
+        { name: 'WhatsApp', note: 'chat preview · outgoing bubble', surface: 's-whatsapp', body: whatsapp(t) },
+        { name: 'Google', note: 'search result · description from meta', surface: 's-white', body: google(t) },
+      ];
+
+      const visible = t.twitterCard === 'summary' ? cards.filter((card) => card.name !== 'X') : cards.filter((card) => card.name !== 'X · summary');
+
+      els.tray.innerHTML = `<div class="specimens">${visible.map((card) => `
+      <article class="specimen">
+        <div class="specimen-head">
+          <span class="specimen-name">${esc(card.name)}</span>
+          <span class="specimen-note">${esc(card.note)}</span>
+        </div>
+        <div class="slab ${card.surface}">${card.body}</div>
+      </article>`).join('')}</div>`;
+    }
+
+    const fallbackTitle = (t) => t.title || t.pageHost;
+
+    function xLarge(t) {
+      return `<div class="x-card">
+      <div class="x-media">
+        ${media(t.twitterImage || t.image, '', t.imageAlt)}
+        <span class="x-domain">${esc(t.pageHost)}</span>
+      </div>
+    </div>`;
+    }
+
+    function xSmall(t) {
+      return `<div class="x-card x-small">
+      <div class="x-thumb">${media(t.twitterImage || t.image, '', t.imageAlt)}</div>
+      <div class="x-body">
+        <div class="x-host clamp c1">${esc(t.pageHost)}</div>
+        <div class="x-title clamp c1">${esc(fallbackTitle(t))}</div>
+        <div class="x-desc clamp c2">${esc(t.description)}</div>
+      </div>
+    </div>`;
+    }
+
+    function facebook(t) {
+      return `<div class="fb-card">
+      ${media(t.image, '', t.imageAlt)}
+      <div class="fb-body">
+        <div class="fb-host clamp c1">${esc(t.pageHost)}</div>
+        <div class="fb-title clamp c2">${esc(fallbackTitle(t))}</div>
+        <div class="fb-desc clamp c1">${esc(t.description)}</div>
+      </div>
+    </div>`;
+    }
+
+    function linkedin(t) {
+      return `<div class="li-card">
+      ${media(t.image, '', t.imageAlt)}
+      <div class="li-body">
+        <div class="li-title clamp c2">${esc(fallbackTitle(t))}</div>
+        <div class="li-host clamp c1">${esc(t.pageHost)}</div>
+      </div>
+    </div>`;
+    }
+
+    function slack(t) {
+      const bar = t.themeColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(t.themeColor) ? t.themeColor : '#dddddd';
+      return `<div class="sl-card" style="border-left-color:${esc(bar)}">
+      <div class="sl-site">
+        ${t.favicon ? `<img src="${esc(proxy(t.favicon))}" alt="">` : ''}
+        <span>${esc(t.siteName || t.pageHost)}</span>
+      </div>
+      <div class="sl-title clamp c2">${esc(fallbackTitle(t))}</div>
+      <div class="sl-desc clamp c3">${esc(t.description)}</div>
+      ${t.image ? `<div class="sl-media">${media(t.image, '', t.imageAlt)}</div>` : ''}
+    </div>`;
+    }
+
+    function discord(t) {
+      const bar = t.themeColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(t.themeColor) ? t.themeColor : '#1e1f22';
+      return `<div class="dc-card" style="border-left-color:${esc(bar)}">
+      ${t.siteName ? `<div class="dc-site">${esc(t.siteName)}</div>` : ''}
+      <div class="dc-title clamp c2">${esc(fallbackTitle(t))}</div>
+      ${t.description ? `<div class="dc-desc clamp c3">${esc(t.description)}</div>` : ''}
+      ${t.image ? `<div class="dc-media">${media(t.image, '', t.imageAlt)}</div>` : ''}
+    </div>`;
+    }
+
+    function imessage(t) {
+      return `<div class="im-card">
+      ${media(t.image, '', t.imageAlt)}
+      <div class="im-body">
+        <div class="im-title clamp c2">${esc(fallbackTitle(t))}</div>
+        <div class="im-host">${esc(t.pageHost)}</div>
+      </div>
+    </div>`;
+    }
+
+    function whatsapp(t) {
+      return `<div class="wa-bubble">
+      <div class="wa-preview">
+        ${media(t.image, '', t.imageAlt)}
+        <div class="wa-body">
+          <div class="wa-title clamp c2">${esc(fallbackTitle(t))}</div>
+          <div class="wa-desc clamp c2">${esc(t.description)}</div>
+          <div class="wa-host clamp c1">${esc(t.pageHost)}</div>
+        </div>
+      </div>
+      <div class="wa-link clamp c1">${esc(t.ogUrl || data.finalUrl)}</div>
+    </div>`;
+    }
+
+    function google(t) {
+      return `<div class="go-card">
+      <div class="go-site">
+        ${t.favicon ? `<img class="go-favicon" src="${esc(proxy(t.favicon))}" alt="">` : ''}
+        <div>
+          <div class="go-name">${esc(t.siteName || t.pageHost)}</div>
+          <div class="go-host">${esc(t.ogUrl || data.finalUrl)}</div>
+        </div>
+      </div>
+      <div class="go-title clamp c1">${esc(t.documentTitle || fallbackTitle(t))}</div>
+      <div class="go-desc clamp c2">${esc(t.description)}</div>
+    </div>`;
+    }
+
+    function tagBlock(t) {
+      const lines = [
+        ['og:title', t.title],
+        ['og:description', t.description],
+        ['og:image', t.image],
+        ['og:image:alt', t.imageAlt],
+        ['og:image:width', data.image && data.image.width ? String(data.image.width) : ''],
+        ['og:image:height', data.image && data.image.height ? String(data.image.height) : ''],
+        ['og:url', t.ogUrl],
+        ['og:type', t.type || 'website'],
+        ['og:site_name', t.siteName],
+      ].filter(([, value]) => value)
+              .map(([key, value]) => `<meta property="${key}" content="${esc(value)}" />`);
+
+      lines.push(`<meta name="twitter:card" content="${esc(t.twitterCard || 'summary_large_image')}" />`);
+      if (t.twitterSite) lines.push(`<meta name="twitter:site" content="${esc(t.twitterSite)}" />`);
+      return lines.join('\n');
+    }
+
+    // ------------------------------------------------------------------ boot
+
+    const looksLikeUrl = (text) =>
+            /^(https?:\/\/|localhost[:/]|\d{1,3}(\.\d{1,3}){3}[:/]|[\w-]+(\.[\w-]+)+[:/])/i.test(text) &&
+            !/\s/.test(text);
+
+    els.toggle.addEventListener('click', () => {
+      const open = els.advanced.classList.toggle('open');
+      els.toggle.textContent = open ? 'Fewer options' : 'More options';
+    });
+
+    els.run.addEventListener('click', run);
+    els.url.addEventListener('keydown', (event) => { if (event.key === 'Enter') run(); });
+    els.agent.addEventListener('change', () => { if (data) run(); });
+
+    // Pasting into the field previews right away, so you don't reach for the button.
+    els.url.addEventListener('paste', (event) => {
+      const text = (event.clipboardData || window.clipboardData).getData('text').trim();
+      if (!looksLikeUrl(text)) return;
+      event.preventDefault();
+      els.url.value = text;
+      run();
+    });
+
+    // Pasting anywhere else on the page does the same, as long as you aren't typing in a field.
+    document.addEventListener('paste', (event) => {
+      const tag = (document.activeElement || {}).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      const text = (event.clipboardData || window.clipboardData).getData('text').trim();
+      if (!looksLikeUrl(text)) return;
+      els.url.value = text;
+      run();
+    });
+
+    els.paste.addEventListener('click', async () => {
+      try {
+        const text = (await navigator.clipboard.readText()).trim();
+        if (!text) return els.url.focus();
+        els.url.value = text;
+        run();
+      } catch {
+        // Firefox and denied permissions land here.
+        els.url.focus();
+        els.url.select();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+        event.preventDefault();
+        run();
+      }
+      if (event.key === 'Escape' && document.activeElement === els.url) els.url.blur();
+    });
+
+    renderRecent();
+
+    const startUrl = new URLSearchParams(location.search).get('url');
+    if (startUrl) {
+      els.url.value = startUrl;
+      run();
+    } else {
+      setMode('hero');
+      els.url.focus();
+    }
+  })();
+</script>
+</body>
+</html>
