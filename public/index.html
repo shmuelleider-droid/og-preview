@@ -252,6 +252,24 @@
 
     .advanced { margin-top: 14px; display: none; }
     .advanced.open { display: block; }
+    .advanced .row + .row { margin-top: 14px; }
+
+    .pill {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 1px 8px;
+      border-radius: 999px;
+      background: rgba(95, 212, 224, 0.14);
+      border: 1px solid rgba(95, 212, 224, 0.4);
+      color: var(--accent);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      vertical-align: middle;
+    }
+
+    .hint .link-button { font-size: inherit; padding: 0; }
 
     .hint { color: var(--dim); font-size: 11px; margin-top: 6px; }
 
@@ -650,14 +668,24 @@
     <div class="alert" id="alert" hidden></div>
     <div class="recent" id="recent" hidden></div>
 
-    <button class="link-button" id="toggle-advanced">More options</button>
+    <button class="link-button" id="toggle-advanced">More options<span class="pill" id="cookie-pill" hidden></span></button>
 
     <div class="advanced" id="advanced">
       <div class="row">
         <div class="field">
-          <label for="headers">Request headers, one per line</label>
-          <textarea id="headers" spellcheck="false" placeholder="Cookie: .ASPXAUTH=…&#10;Authorization: Bearer …"></textarea>
-          <div class="hint">Use these to preview pages behind a login.</div>
+          <label for="cookies">Cookies</label>
+          <textarea id="cookies" spellcheck="false" placeholder=".ASPXAUTH=A1B2C3…; ASP.NET_SessionId=xyz…"></textarea>
+          <div class="hint">
+            Paste the <code>Cookie</code> header straight from your network tab, or one <code>name=value</code> per line.
+            Attributes like <code>Path</code> and <code>HttpOnly</code> are stripped, so a <code>Set-Cookie</code> line works too.
+            Saved in this browser per host. <button class="link-button" id="clear-cookies">Clear for this host</button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="headers">Other request headers, one per line</label>
+          <textarea id="headers" spellcheck="false" placeholder="Authorization: Bearer …&#10;X-Forwarded-Proto: https"></textarea>
         </div>
         <div class="field">
           <label for="html">Or paste HTML instead of fetching</label>
@@ -695,9 +723,11 @@
       advanced: $('advanced'), toggle: $('toggle-advanced'), console: $('console'),
       shell: document.querySelector('.shell'), paste: $('paste'),
       recent: $('recent'), alert: $('alert'),
+      cookies: $('cookies'), cookiePill: $('cookie-pill'), clearCookies: $('clear-cookies'),
     };
 
     const RECENT_KEY = 'og-lab:recent';
+    const COOKIE_KEY = 'og-lab:cookies';
 
     let data = null;
     const overrides = {};
@@ -751,6 +781,65 @@
       try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch { return []; }
     }
 
+    // ---------------------------------------------------------------- cookies
+
+    let cookieHost = '';
+
+    function hostOf(value) {
+      if (!value) return '';
+      try { return new URL(/^https?:\/\//i.test(value) ? value : `http://${value}`).host; }
+      catch { return ''; }
+    }
+
+    function readCookieJar() {
+      try { return JSON.parse(localStorage.getItem(COOKIE_KEY)) || {}; } catch { return {}; }
+    }
+
+    function writeCookieJar(jar) {
+      try { localStorage.setItem(COOKIE_KEY, JSON.stringify(jar)); } catch { /* private mode */ }
+    }
+
+    /** Counts `name=value` pairs the way the server parses them. */
+    function countCookies(text) {
+      return String(text || '')
+              .split(/[\n;]+/)
+              .map((entry) => entry.trim().replace(/^(set-)?cookie\s*:\s*/i, ''))
+              .filter((entry) => /^[\w!#$%&'*+\-.^`|~]+=/.test(entry))
+              .filter((entry) => !/^(path|domain|expires|max-age|samesite|secure|httponly|priority|partitioned)=/i.test(entry))
+              .length;
+    }
+
+    function refreshCookiePill() {
+      const count = countCookies(els.cookies.value);
+      els.cookiePill.hidden = count === 0;
+      els.cookiePill.textContent = count === 1 ? '1 cookie' : `${count} cookies`;
+    }
+
+    /** Swaps in the saved cookies whenever the host in the URL field changes. */
+    function syncCookiesToHost() {
+      const host = hostOf(els.url.value.trim());
+      if (host === cookieHost) return;
+      const jar = readCookieJar();
+      const pending = els.cookies.value.trim();
+      if (cookieHost && pending) jar[cookieHost] = pending;
+      const previous = cookieHost;
+      cookieHost = host;
+      // Cookies typed before any URL was entered belong to the host you type next.
+      els.cookies.value = jar[host] || (!previous ? pending : '');
+      if (host && els.cookies.value.trim()) jar[host] = els.cookies.value.trim();
+      writeCookieJar(jar);
+      refreshCookiePill();
+    }
+
+    function saveCookies() {
+      if (!cookieHost) return;
+      const jar = readCookieJar();
+      const value = els.cookies.value.trim();
+      if (value) jar[cookieHost] = value;
+      else delete jar[cookieHost];
+      writeCookieJar(jar);
+    }
+
     function rememberUrl(url) {
       const list = [url, ...readRecent().filter((item) => item !== url)].slice(0, 6);
       try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch { /* private mode */ }
@@ -789,11 +878,19 @@
       els.run.disabled = true;
       els.run.textContent = 'Fetching';
       els.status.innerHTML = '<span class="busy">fetching…</span>';
+      syncCookiesToHost();
+      saveCookies();
       try {
         const response = await fetch('/api/preview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, html, agent: els.agent.value, headers: els.headers.value }),
+          body: JSON.stringify({
+            url,
+            html,
+            agent: els.agent.value,
+            headers: els.headers.value,
+            cookies: els.cookies.value,
+          }),
         });
         const payload = await response.json();
         if (payload.error) {
@@ -830,6 +927,9 @@
       const parts = [`<span>HTTP <b>${data.status}</b></span>`];
       if (data.redirected) parts.push(`<span>redirected to <b>${esc(host(data.finalUrl))}</b></span>`);
       parts.push(`<span><b>${(data.bytes / 1024).toFixed(0)}</b> KB html</span>`);
+      if (data.cookieCount) {
+        parts.push(`<span><b>${data.cookieCount}</b> cookie${data.cookieCount === 1 ? '' : 's'} sent</span>`);
+      }
       if (image && image.ok && image.width) {
         parts.push(`<span>image <b>${image.width}\u00d7${image.height}</b> ${esc(image.format)}</span>`);
       }
@@ -1156,14 +1256,31 @@
       if (event.key === 'Escape' && document.activeElement === els.url) els.url.blur();
     });
 
+    els.cookies.addEventListener('input', () => {
+      refreshCookiePill();
+      saveCookies();
+    });
+
+    els.clearCookies.addEventListener('click', () => {
+      els.cookies.value = '';
+      saveCookies();
+      refreshCookiePill();
+      els.cookies.focus();
+    });
+
+    els.url.addEventListener('change', syncCookiesToHost);
+    els.url.addEventListener('blur', syncCookiesToHost);
+
     renderRecent();
 
     const startUrl = new URLSearchParams(location.search).get('url');
     if (startUrl) {
       els.url.value = startUrl;
+      syncCookiesToHost();
       run();
     } else {
       setMode('hero');
+      syncCookiesToHost();
       els.url.focus();
     }
   })();

@@ -36,13 +36,26 @@ You can also open a URL directly: `http://127.0.0.1:4747/?url=http://localhost:3
 
 ## Previewing pages that need context
 
-**A page behind a login.** Under **More options**, paste request headers, one per line:
+**A page behind a login.** Select **More options** and paste your session cookies into the **Cookies** field. Any of these work:
 
 ```
-Cookie: .ASPXAUTH=ABCDEF…; ASP.NET_SessionId=…
+.ASPXAUTH=A1B2C3…; ASP.NET_SessionId=xyz…
 ```
 
-Copy the value from your browser's network tab.
+```
+Cookie: .ASPXAUTH=A1B2C3…; ASP.NET_SessionId=xyz…
+```
+
+```
+.ASPXAUTH=A1B2C3…
+ASP.NET_SessionId=xyz…
+```
+
+Copy the `Cookie` request header from your browser's network tab, or paste a `Set-Cookie` line and let og-lab strip the `Path`, `HttpOnly`, `SameSite`, and `Expires` attributes for you.
+
+Cookies go to the page request and to the `og:image` request, but only when the image sits on the page's host or a subdomain of it. Nothing appears in a URL, and the count of cookies actually sent shows in the top bar after each fetch.
+
+og-lab saves cookies per host in your browser's `localStorage`, so switching between two local sites keeps each one's session. **Clear for this host** removes them. If a fetch redirects to a sign-in page or returns 401 or 403, the checks rail says so at the top instead of showing you the login page's tags.
 
 **A page that varies by crawler.** Some stacks serve different markup to bots. Switch **Fetch as** to `facebookexternalhit` or `Twitterbot` to see what the crawler receives. Changing the selection refetches.
 
@@ -52,6 +65,7 @@ Copy the value from your browser's network tab.
 
 ## Notes
 
-- The server binds to loopback by default, and it fetches whatever URL you give it. Treat `--host 0.0.0.0` the way you'd treat any open proxy on your network.
+- The server binds to loopback by default, and it fetches whatever URL you give it. Treat `--host 0.0.0.0` the way you'd treat any open proxy on your network, especially with cookies loaded.
+- Cookies live in your browser's `localStorage` and in memory on the server for the life of the process. Nothing is written to disk by og-lab.
 - Card layouts track what the platforms render today. Platforms change them without notice, and X in particular now hides the title and description on `summary_large_image`, which is why that card is image-only.
-- The API is two endpoints, if you want to script against it: `POST /api/preview` with `{ url, html, agent, headers }`, and `GET /api/image?url=…`.
+- The API is two endpoints, if you want to script against it: `POST /api/preview` with `{ url, html, agent, headers, cookies }`, and `GET /api/image?url=…`.
