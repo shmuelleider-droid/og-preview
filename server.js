@@ -55,12 +55,12 @@ const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 
 const USER_AGENTS = {
   browser:
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15',
   facebook: 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
   twitter: 'Twitterbot/1.0',
   slack: 'Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)',
   linkedin:
-    'LinkedInBot/1.0 (compatible; Mozilla/5.0; Apache-HttpClient +http://www.linkedin.com)',
+      'LinkedInBot/1.0 (compatible; Mozilla/5.0; Apache-HttpClient +http://www.linkedin.com)',
   discord: 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)',
   whatsapp: 'WhatsApp/2.23.20.0',
   google: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
@@ -82,9 +82,9 @@ function decodeEntities(input) {
   return input.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (match, body) => {
     if (body[0] === '#') {
       const code =
-        body[1] === 'x' || body[1] === 'X'
-          ? parseInt(body.slice(2), 16)
-          : parseInt(body.slice(1), 10);
+          body[1] === 'x' || body[1] === 'X'
+              ? parseInt(body.slice(2), 16)
+              : parseInt(body.slice(1), 10);
       return Number.isFinite(code) ? String.fromCodePoint(code) : match;
     }
     const named = NAMED_ENTITIES[body.toLowerCase()];
@@ -93,7 +93,7 @@ function decodeEntities(input) {
 }
 
 const ATTR_PATTERN =
-  /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
+    /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
 
 function parseAttributes(source) {
   const attributes = {};
@@ -163,7 +163,7 @@ function firstValue(meta, ...keys) {
 
 function allValues(meta, key) {
   return meta.filter((entry) => entry.key === key && entry.value.trim() !== '')
-    .map((entry) => entry.value.trim());
+      .map((entry) => entry.value.trim());
 }
 
 function absolutize(value, base) {
@@ -183,14 +183,14 @@ function isLocalHost(value) {
   try {
     const host = new URL(value).hostname.toLowerCase();
     return (
-      host === 'localhost' ||
-      host === '::1' ||
-      host.endsWith('.local') ||
-      host.endsWith('.localhost') ||
-      /^127\./.test(host) ||
-      /^10\./.test(host) ||
-      /^192\.168\./.test(host) ||
-      /^172\.(1[6-9]|2\d|3[01])\./.test(host)
+        host === 'localhost' ||
+        host === '::1' ||
+        host.endsWith('.local') ||
+        host.endsWith('.localhost') ||
+        /^127\./.test(host) ||
+        /^10\./.test(host) ||
+        /^192\.168\./.test(host) ||
+        /^172\.(1[6-9]|2\d|3[01])\./.test(host)
     );
   } catch {
     return false;
@@ -230,7 +230,7 @@ function readImageSize(buffer) {
       }
       const segment = buffer.readUInt16BE(offset + 2);
       const isFrame =
-        marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
+          marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
       if (isFrame) {
         return {
           format: 'jpeg',
@@ -367,15 +367,15 @@ function extract(document, pageUrl) {
   const base = document.base ? absolutize(document.base, pageUrl) : pageUrl;
 
   const ogImages = allValues(meta, 'og:image')
-    .concat(allValues(meta, 'og:image:url'))
-    .concat(allValues(meta, 'og:image:secure_url'));
+      .concat(allValues(meta, 'og:image:url'))
+      .concat(allValues(meta, 'og:image:secure_url'));
   const twitterImages = allValues(meta, 'twitter:image').concat(allValues(meta, 'twitter:image:src'));
 
   const canonical = links.find((link) => link.rel.split(/\s+/).includes('canonical'));
   const icon =
-    links.find((link) => link.rel.split(/\s+/).includes('apple-touch-icon')) ||
-    links.find((link) => link.rel.split(/\s+/).includes('icon')) ||
-    links.find((link) => link.rel.split(/\s+/).includes('shortcut'));
+      links.find((link) => link.rel.split(/\s+/).includes('apple-touch-icon')) ||
+      links.find((link) => link.rel.split(/\s+/).includes('icon')) ||
+      links.find((link) => link.rel.split(/\s+/).includes('shortcut'));
 
   const rawImage = ogImages[0] || twitterImages[0] || '';
   const rawTwitterImage = twitterImages[0] || ogImages[0] || '';
@@ -386,21 +386,21 @@ function extract(document, pageUrl) {
     documentTitle: document.title,
     title: firstValue(meta, 'og:title', 'twitter:title') || document.title,
     titleSource: firstValue(meta, 'og:title')
-      ? 'og:title'
-      : firstValue(meta, 'twitter:title')
-        ? 'twitter:title'
-        : document.title
-          ? '<title>'
-          : 'none',
+        ? 'og:title'
+        : firstValue(meta, 'twitter:title')
+            ? 'twitter:title'
+            : document.title
+                ? '<title>'
+                : 'none',
     description:
-      firstValue(meta, 'og:description', 'twitter:description', 'description') || '',
+        firstValue(meta, 'og:description', 'twitter:description', 'description') || '',
     descriptionSource: firstValue(meta, 'og:description')
-      ? 'og:description'
-      : firstValue(meta, 'twitter:description')
-        ? 'twitter:description'
-        : firstValue(meta, 'description')
-          ? 'description'
-          : 'none',
+        ? 'og:description'
+        : firstValue(meta, 'twitter:description')
+            ? 'twitter:description'
+            : firstValue(meta, 'description')
+                ? 'description'
+                : 'none',
     siteName: firstValue(meta, 'og:site_name', 'application-name') || '',
     type: firstValue(meta, 'og:type') || '',
     ogUrl: firstValue(meta, 'og:url'),
@@ -570,18 +570,114 @@ function parseHeaderBlock(text) {
   return headers;
 }
 
+// Attribute names that show up when someone pastes a Set-Cookie response header.
+const COOKIE_ATTRIBUTES = new Set([
+  'path', 'domain', 'expires', 'max-age', 'samesite', 'secure', 'httponly',
+  'priority', 'partitioned', 'version', 'comment',
+]);
+
+/**
+ * Accepts a raw Cookie header, a Set-Cookie line, `document.cookie` output, or
+ * one `name=value` per line, and returns a normalized Cookie header value.
+ */
+function parseCookieInput(text) {
+  if (!text) return '';
+  const pairs = [];
+  const seen = new Set();
+
+  for (let entry of String(text).split(/[\n;]+/)) {
+    entry = entry.trim().replace(/^set-cookie\s*:\s*/i, '').replace(/^cookie\s*:\s*/i, '');
+    if (!entry) continue;
+
+    const split = entry.indexOf('=');
+    if (split <= 0) continue;
+
+    const name = entry.slice(0, split).trim();
+    if (!/^[\w!#$%&'*+\-.^`|~]+$/.test(name)) continue;
+    if (COOKIE_ATTRIBUTES.has(name.toLowerCase())) continue;
+    if (seen.has(name)) continue;
+
+    const value = entry.slice(split + 1).trim().replace(/^"(.*)"$/, '$1');
+    seen.add(name);
+    pairs.push(`${name}=${value}`);
+  }
+
+  return pairs.join('; ');
+}
+
+function countCookies(cookieHeader) {
+  return cookieHeader ? cookieHeader.split('; ').length : 0;
+}
+
+function originOf(url) {
+  try { return new URL(url).origin; } catch { return ''; }
+}
+
+/** True when the target belongs to the page's host or one of its subdomains. */
+function sameSite(target, page) {
+  try {
+    const a = new URL(target).hostname.toLowerCase();
+    const b = new URL(page).hostname.toLowerCase();
+    return a === b || a.endsWith(`.${b}`);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Holds the cookies from the last preview per origin, so the image proxy can
+ * reuse them without putting credentials in a query string.
+ */
+const cookieStore = new Map();
+
+function rememberCookies(pageUrl, cookieHeader, agent) {
+  const origin = originOf(pageUrl);
+  if (!origin) return;
+  if (!cookieHeader) {
+    cookieStore.delete(origin);
+    return;
+  }
+  cookieStore.set(origin, { cookie: cookieHeader, page: pageUrl, agent });
+  if (cookieStore.size > 20) cookieStore.delete(cookieStore.keys().next().value);
+}
+
+function cookiesFor(targetUrl) {
+  for (const [origin, entry] of cookieStore) {
+    if (originOf(targetUrl) === origin || sameSite(targetUrl, entry.page)) return entry.cookie;
+  }
+  return '';
+}
+
 async function buildPreview(payload) {
   const agent = USER_AGENTS[payload.agent] || USER_AGENTS.browser;
+  const custom = parseHeaderBlock(payload.headers);
+
+  // A Cookie line typed into the headers box merges with the cookies field.
+  const inlineCookie = Object.keys(custom).find((name) => name.toLowerCase() === 'cookie');
+  if (inlineCookie) {
+    payload.cookies = `${payload.cookies || ''}\n${custom[inlineCookie]}`;
+    delete custom[inlineCookie];
+  }
+
+  const cookie = parseCookieInput(payload.cookies);
+
   const headers = {
     'User-Agent': agent,
     Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9',
-    ...parseHeaderBlock(payload.headers),
+    ...(cookie ? { Cookie: cookie } : {}),
+    ...custom,
   };
 
   let html = payload.html || '';
   let pageUrl = payload.url || 'http://localhost/';
-  const response = { requestedUrl: payload.url || '', finalUrl: '', status: 0, redirected: false };
+  const response = {
+    requestedUrl: payload.url || '',
+    finalUrl: '',
+    status: 0,
+    redirected: false,
+    cookieCount: countCookies(cookie),
+  };
 
   if (!payload.html) {
     if (!/^https?:\/\//i.test(pageUrl)) pageUrl = `http://${pageUrl}`;
@@ -594,6 +690,7 @@ async function buildPreview(payload) {
     response.finalUrl = page.url;
     response.redirected = page.url !== pageUrl;
     response.contentType = page.headers.get('content-type') || '';
+    response.setCookie = page.headers.getSetCookie ? page.headers.getSetCookie().length : 0;
     const buffer = await readBody(page, MAX_HTML_BYTES);
     html = buffer.toString('utf8');
     pageUrl = page.url || pageUrl;
@@ -606,10 +703,34 @@ async function buildPreview(payload) {
     response.contentType = 'text/html (pasted)';
   }
 
+  rememberCookies(payload.url || pageUrl, cookie, payload.agent);
+
   const document = parseDocument(html);
   const tags = extract(document, pageUrl);
-  const image = tags.image ? await inspectImage(tags.image, { 'User-Agent': agent }) : null;
+
+  const imageHeaders = { 'User-Agent': agent };
+  if (cookie && sameSite(tags.image, pageUrl)) imageHeaders.Cookie = cookie;
+
+  const image = tags.image ? await inspectImage(tags.image, imageHeaders) : null;
   const checks = runChecks(tags, image, pageUrl);
+
+  // A redirect to a sign-in page is the usual sign that the fetch needs cookies.
+  if (/\b(login|log-in|signin|sign-in|auth|account\/login)\b/i.test(response.finalUrl) &&
+      !/\b(login|signin)\b/i.test(response.requestedUrl)) {
+    checks.unshift({
+      level: 'error',
+      label: 'The fetch landed on a sign-in page',
+      detail: cookie
+          ? 'The cookies you supplied were rejected or have expired. Copy a fresh set from the network tab.'
+          : 'Paste your session cookies under More options so the crawler sees the real page.',
+    });
+  } else if (response.status === 401 || response.status === 403) {
+    checks.unshift({
+      level: 'error',
+      label: `The page returned ${response.status}`,
+      detail: 'Add session cookies under More options to preview a page behind a login.',
+    });
+  }
 
   return { ...response, agent, tags, image, checks, bytes: Buffer.byteLength(html) };
 }
@@ -641,6 +762,19 @@ const STATIC_TYPES = {
   '.svg': 'image/svg+xml',
 };
 
+// Look in public/ first, then next to server.js, so a flattened download works.
+const STATIC_DIRS = [path.join(__dirname, 'public'), __dirname];
+
+function resolveStatic(requestPath) {
+  const file = requestPath === '/' ? 'index.html' : requestPath.replace(/^\/+/, '');
+  for (const dir of STATIC_DIRS) {
+    const target = path.resolve(dir, file);
+    if (!target.startsWith(path.resolve(dir) + path.sep)) continue;
+    if (fs.existsSync(target) && fs.statSync(target).isFile()) return target;
+  }
+  return null;
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
 
@@ -660,8 +794,12 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/image' && req.method === 'GET') {
       const target = url.searchParams.get('url');
       if (!target || !/^https?:\/\//i.test(target)) return send(res, 400, { error: 'Bad image url.' });
+      const cookie = cookiesFor(target);
       const upstream = await fetch(target, {
-        headers: { 'User-Agent': USER_AGENTS[url.searchParams.get('agent')] || USER_AGENTS.browser },
+        headers: {
+          'User-Agent': USER_AGENTS[url.searchParams.get('agent')] || USER_AGENTS.browser,
+          ...(cookie ? { Cookie: cookie } : {}),
+        },
         redirect: 'follow',
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });
@@ -676,12 +814,23 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET') {
-      const file = url.pathname === '/' ? 'index.html' : url.pathname.replace(/^\/+/, '');
-      const target = path.join(__dirname, 'public', file);
-      if (!target.startsWith(path.join(__dirname, 'public'))) return send(res, 403, 'Forbidden', 'text/plain');
-      if (fs.existsSync(target) && fs.statSync(target).isFile()) {
+      const target = resolveStatic(url.pathname);
+      if (target) {
         const type = STATIC_TYPES[path.extname(target)] || 'application/octet-stream';
         return send(res, 200, fs.readFileSync(target), type);
+      }
+      if (url.pathname === '/') {
+        return send(
+            res,
+            500,
+            `<!doctype html><meta charset="utf-8"><title>og-lab</title>
+           <body style="font:14px/1.6 ui-monospace,monospace;padding:40px;max-width:60ch">
+           <h1 style="font-size:16px">index.html is missing</h1>
+           <p>og-lab looked in:</p>
+           <ul>${STATIC_DIRS.map((dir) => `<li>${path.join(dir, 'index.html')}</li>`).join('')}</ul>
+           <p>Put <code>index.html</code> in either directory and reload.</p>`,
+            'text/html; charset=utf-8',
+        );
       }
     }
 
@@ -694,4 +843,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
   console.log(`og-lab is listening on http://${HOST}:${PORT}`);
   if (INSECURE) console.log('TLS verification is off for this process.');
+  if (!resolveStatic('/')) {
+    console.warn('Warning: index.html is missing. Put it in ./public or next to server.js.');
+  }
 });
